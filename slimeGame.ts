@@ -31,6 +31,9 @@ function getRandomTile(): tileType{
 
 console.table(board); // testing board size and randomizing
 
+// tracking visited tiles
+const visited = new Set<string>();
+
 // priority queue helper class (added to support tile selection)
 class PriorityQueue<T> {
     private items: { value: T, priority: number }[] = [];
@@ -54,7 +57,6 @@ const slime = {
     position: {x: 2, y: 2}, // starting position
     energy: 10, // starting energy 
     points: 0, // starting points (tiles touched)
-
     move(){ // setting up possible movements
         const directions = [
             {x: 1, y: 0}, // right
@@ -71,8 +73,9 @@ const slime = {
 
             if(this.isValidMove(newX, newY)){ // checks if player has enough energy for move
                 const cost = this.getEnergyCost(newX, newY);
+                const key = `${newX},${newY}`;
 
-                if(board[newY][newX] !== tileType.lava){
+                if(board[newY][newX] !== tileType.lava && !visited.has(key)){
                     pq.enqueue({x: newX, y: newY}, cost);
                 }
             }
@@ -86,6 +89,7 @@ const slime = {
                 this.position = {x: next.x, y: next.y};
                 this.energy -= cost;
                 this.points++;
+                visited.add(`${next.x},${next.y}`); // mark tile as visited
                 console.log(`Moved to (${next.x}, ${next.y}) - Energy left: ${this.energy}`);
             }
             else{
@@ -120,6 +124,17 @@ const slime = {
     }
 };
 
-// testing slime status and movement
-slime.displayStatus();
-slime.move();
+// Loops for moves until 0 energy
+function gameLoop(){
+    if(slime.energy > 0){
+        slime.move();
+        slime.displayStatus();
+    }
+    else{
+        console.log("Game over! Out of energy.")
+    }
+}
+
+while(slime.energy > 0){
+    gameLoop();
+}
