@@ -55,7 +55,7 @@ class PriorityQueue<T> {
 // setting up "slime" character
 const slime = {
     position: {x: 2, y: 2}, // starting position
-    energy: 10, // starting energy 
+    energy: 8, // starting energy 
     points: 0, // starting points (tiles touched)
     move(){ // setting up possible movements
         const directions = [
@@ -100,9 +100,6 @@ const slime = {
                 }
             }
         }
-        else {
-            console.log("No valid non-lava tiles nearby.");
-        }
     },
 
     isValidMove(x: number, y: number): boolean {
@@ -140,7 +137,8 @@ const slime = {
             const newY = this.position.y + dir.y;
             if(this.isValidMove(newX, newY)){
                 const key = `${newX},${newY}`;
-                if(board[newY][newX] !== tileType.lava && !visited.has(key)){
+                const cost = this.getEnergyCost(newX, newY);
+                if(board[newY][newX] !== tileType.lava && !visited.has(key) && this.energy >= cost){
                     return true;
                 }
             }
@@ -150,23 +148,22 @@ const slime = {
     }
 };
 
+// Mark the starting position as visited
+visited.add(`${slime.position.x},${slime.position.y}`);
+
 // Loops for moves until 0 energy or no valid moves
 function gameLoop(){
-    if(slime.energy > 0){
-        slime.move();
-        slime.displayStatus();
-        
-        // Check if there is no valid move and end the game
-        if (slime.energy <= 0 || !slime.canMove()) {
-            console.log("Game over! No valid moves left or out of energy.");
-            return;
-        }
-    }
-    else{
-        console.log("Game over! Out of energy.");
-    }
+    slime.move();
+    slime.displayStatus();
 }
 
-while(slime.energy > 0){
+while(slime.energy > 0 && slime.canMove()){
     gameLoop();
+}
+
+if(slime.energy <= 0){
+    console.log("Game over! Out of energy.");
+}
+else if(!slime.canMove()){
+    console.log("Game over! No valid moves left.");
 }
