@@ -66,6 +66,7 @@ const slime = {
         ];
 
         const pq = new PriorityQueue<{x: number, y: number}>(); // setting up priority queue
+        let foundValidMove = false;
 
         for (const dir of directions){ // moving character
             const newX = this.position.x + dir.x;
@@ -77,23 +78,26 @@ const slime = {
 
                 if(board[newY][newX] !== tileType.lava && !visited.has(key)){
                     pq.enqueue({x: newX, y: newY}, cost);
+                    foundValidMove = true;
                 }
             }
         }
 
-        if(!pq.isEmpty()){
-            const next = pq.dequeue(); // get tile with lowest cost
-            const cost = this.getEnergyCost(next.x, next.y);
+        if(foundValidMove){
+            if(!pq.isEmpty()){
+                const next = pq.dequeue(); // get tile with lowest cost
+                const cost = this.getEnergyCost(next.x, next.y);
 
-            if(this.energy >= cost){
-                this.position = {x: next.x, y: next.y};
-                this.energy -= cost;
-                this.points++;
-                visited.add(`${next.x},${next.y}`); // mark tile as visited
-                console.log(`Moved to (${next.x}, ${next.y}) - Energy left: ${this.energy}`);
-            }
-            else{
-                console.log("Not enough energy to move.");
+                if(this.energy >= cost){
+                    this.position = {x: next.x, y: next.y};
+                    this.energy -= cost;
+                    this.points++;
+                    visited.add(`${next.x},${next.y}`); // mark tile as visited
+                    console.log(`Moved to (${next.x}, ${next.y}) - Energy left: ${this.energy}`);
+                }
+                else{
+                    console.log("Not enough energy to move.");
+                }
             }
         }
         else {
@@ -121,17 +125,45 @@ const slime = {
         console.log(`Slime is at (${this.position.x}, ${this.position.y})`);
         console.log(`Energy: ${this.energy}`);
         console.log(`Points: ${this.points}`);
+    },
+
+    canMove(): boolean { // check if any valid moves are left
+        const directions = [
+            {x: 1, y: 0}, // right
+            {x: -1, y: 0}, // left
+            {x: 0, y: 1}, // up
+            {x: 0, y: -1} // down
+        ];
+
+        for (const dir of directions){
+            const newX = this.position.x + dir.x;
+            const newY = this.position.y + dir.y;
+            if(this.isValidMove(newX, newY)){
+                const key = `${newX},${newY}`;
+                if(board[newY][newX] !== tileType.lava && !visited.has(key)){
+                    return true;
+                }
+            }
+        }
+
+        return false; // no valid moves left
     }
 };
 
-// Loops for moves until 0 energy
+// Loops for moves until 0 energy or no valid moves
 function gameLoop(){
     if(slime.energy > 0){
         slime.move();
         slime.displayStatus();
+        
+        // Check if there is no valid move and end the game
+        if (slime.energy <= 0 || !slime.canMove()) {
+            console.log("Game over! No valid moves left or out of energy.");
+            return;
+        }
     }
     else{
-        console.log("Game over! Out of energy.")
+        console.log("Game over! Out of energy.");
     }
 }
 
