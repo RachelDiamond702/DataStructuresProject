@@ -19,10 +19,13 @@ for(let i = 0; i < 5; i++){
     board.push(row);
 }
 
+// Force center tile to be dirt
+board[2][2] = tileType.dirt;
+
 // random tile helper function
 function getRandomTile(): tileType{
     const tiles = Object.values(tileType);
-    const randomIndex = Math.floor(Math.random()*tiles.length);
+    const randomIndex = Math.floor(Math.random() * tiles.length);
     return tiles[randomIndex];
 }
 
@@ -70,7 +73,7 @@ const slime = {
                 const cost = this.getEnergyCost(newX, newY);
 
                 if(board[newY][newX] !== tileType.lava){
-                    pq.enqueue({x: newX, y: newY}, cost); // fixed typo: enque -> enqueue
+                    pq.enqueue({x: newX, y: newY}, cost);
                 }
             }
         }
@@ -90,7 +93,7 @@ const slime = {
             }
         }
         else {
-            console.log("No valid non-lava tiles nearby."); // moved this else block out of inner if
+            console.log("No valid non-lava tiles nearby.");
         }
     },
 
@@ -120,4 +123,3 @@ const slime = {
 // testing slime status and movement
 slime.displayStatus();
 slime.move();
-slime.displayStatus();
